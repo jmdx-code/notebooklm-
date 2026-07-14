@@ -51,3 +51,52 @@ Content-Type: application/json
 - 提取使用 NotebookLM 页面已登录上下文中的来源列表和来源详情请求；NotebookLM 的内部接口和数据结构可能变化。
 - 启用翻译后，转录文字会发送到 Google 的免费翻译 Web 端点。该非密钥方式适合个人少量使用，可能会受频率限制或随服务变更而失效。
 - 点击「登记表格」后，三列数据会发送到你在扩展图标中配置的 Apps Script 部署链接。
+
+## 如何发布新版本
+
+本项目使用 GitHub Actions 自动构建并发布。每次发布只需创建并推送一个版本 Tag；系统会自动打包扩展、生成构建溯源证明（Attestation），并创建 Release。
+
+### 发布步骤
+
+#### 1. 提交并推送代码
+
+```bash
+git status
+git add .
+git commit -m "你的改动说明"
+git push origin main
+```
+
+#### 2. 创建并推送版本 Tag
+
+版本号使用 `v主版本.次版本.修订版本` 格式，例如 `v1.0.1`。
+
+```bash
+git tag -a v1.0.1 -m "Release version 1.0.1"
+git push origin v1.0.1
+```
+
+推送后，GitHub Actions 会自动：
+
+1. 校验扩展的 `manifest.json`。
+2. 打包根目录包含 `manifest.json` 的 ZIP 文件。
+3. 为最终 ZIP 生成 Attestation。
+4. 创建 GitHub Release 并由 `github-actions[bot]` 上传 ZIP。
+
+#### 3. 查看结果
+
+- 构建进度：在仓库的 **Actions** 页面查看。
+- 发布文件：在仓库的 **Releases** 页面下载。
+
+### 如果构建失败
+
+1. 在 **Actions** 页面查看失败日志并修复代码或工作流。
+2. 删除失败的本地和远程 Tag。
+3. 重新创建相同版本的 Tag 并推送：
+
+```bash
+git tag -d v1.0.1
+git push origin :refs/tags/v1.0.1
+git tag -a v1.0.1 -m "Release version 1.0.1"
+git push origin v1.0.1
+```
